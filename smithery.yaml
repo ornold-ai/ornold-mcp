@@ -1,0 +1,45 @@
+startCommand:
+  type: stdio
+  configSchema:
+    type: object
+    required:
+      - token
+    properties:
+      token:
+        type: string
+        description: "Ornold API token (get one at https://mcp.ornold.com)"
+      mode:
+        type: string
+        enum: ["dom", "vision", "both"]
+        default: "dom"
+        description: "Interaction mode"
+      linkenPort:
+        type: number
+        description: "Linken Sphere API port"
+      dolphinPort:
+        type: number
+        description: "Dolphin Anty local port"
+      dolphinToken:
+        type: string
+        description: "Dolphin Anty cloud API token"
+      wadexPort:
+        type: number
+        description: "Wadex API port"
+      visionToken:
+        type: string
+        description: "Vision Browser X-Token"
+      visionPort:
+        type: number
+        description: "Vision Browser local port"
+  commandFunction: |
+    (config) => {
+      const args = ["mcp-ornold-browser", "--token", config.token];
+      if (config.mode && config.mode !== "dom") args.push("--mode", config.mode);
+      if (config.linkenPort) args.push("--linken-port", String(config.linkenPort));
+      if (config.dolphinPort) args.push("--dolphin-port", String(config.dolphinPort));
+      if (config.dolphinToken) args.push("--dolphin-token", config.dolphinToken);
+      if (config.wadexPort) args.push("--wadex-port", String(config.wadexPort));
+      if (config.visionToken) args.push("--vision-token", config.visionToken);
+      if (config.visionPort) args.push("--vision-port", String(config.visionPort));
+      return { command: "npx", args };
+    }

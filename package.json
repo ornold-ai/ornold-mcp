@@ -1,0 +1,19 @@
+{
+  "name": "ornold-mcp",
+  "version": "1.0.0",
+  "description": "Documentation and setup guides for Ornold MCP browser automation",
+  "private": true,
+  "keywords": [
+    "mcp",
+    "browser-automation",
+    "antidetect",
+    "captcha",
+    "ai-agent",
+    "claude",
+    "cursor",
+    "codex",
+    "linken-sphere",
+    "dolphin-anty"
+  ],
+  "license": "MIT"
+}
