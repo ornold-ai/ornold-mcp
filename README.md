@@ -174,7 +174,7 @@ Native integration with popular antidetect browsers:
 ## Links
 
 - **Dashboard & Tokens**: [mcp.ornold.com](https://mcp.ornold.com)
-- **Website**: [ornold.app](https://ornold.app)
+- **Website**: [ornold.com](https://ornold.com)
 - **npm**: [mcp-ornold-browser](https://www.npmjs.com/package/mcp-ornold-browser)
 
 ## License
