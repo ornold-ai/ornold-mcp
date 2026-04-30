@@ -1,15 +1,11 @@
-# Ornold MCP — Browser Automation for AI Agents
+# Ornold MCP
 
-## For AI Agents
+If a user asks you to install Ornold MCP, read [AGENTS.md](AGENTS.md) for step-by-step instructions.
 
-If you are an AI agent and a user asks you to install Ornold MCP, read [AGENTS.md](AGENTS.md) for step-by-step instructions.
+**Quick version:** npm package is `mcp-ornold-browser`. User needs a token from https://mcp.ornold.com.
 
-**Quick version:** The npm package is `mcp-ornold-browser`. The user needs a token from https://mcp.ornold.com.
-
+For Claude Code:
 ```bash
-npx mcp-ornold-browser --token USER_TOKEN
+claude mcp add --transport stdio ornold-browser -- npx mcp-ornold-browser --token TOKEN
+npx mcp-ornold-browser --install-skill
 ```
-
-## For Humans
-
-See [README.md](README.md) for full documentation and setup guides for every AI coding agent.

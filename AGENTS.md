@@ -1,30 +1,28 @@
 # Instructions for AI Agents
 
-This document is for you — the AI agent. If a user asks you to install, set up, or configure Ornold MCP, follow these instructions.
+You are an AI agent. A user has asked you to install Ornold MCP. Follow these steps.
 
 ## What is Ornold MCP?
 
-Ornold MCP (`mcp-ornold-browser`) is an MCP server that gives you browser automation capabilities: control antidetect browsers, solve CAPTCHAs, record and replay automation flows, and interact with web pages through vision (screenshots) or DOM.
+Ornold MCP (`mcp-ornold-browser`) is an MCP server for browser automation: control antidetect browsers (Linken Sphere, Dolphin Anty, Vision Browser, Wadex), solve CAPTCHAs, record and replay automation flows, and interact with web pages through vision or DOM.
 
-## Installation
+npm package: `mcp-ornold-browser`
 
-### Prerequisites
-- Node.js ≥ 18 must be installed
-- User needs an Ornold token from https://mcp.ornold.com
+## Prerequisites
 
-### Step 1: Get the token
-Ask the user for their Ornold token. It starts with `orn_sk_`. If they don't have one, direct them to https://mcp.ornold.com to create an account and generate a token.
+- **Node.js ≥ 18** — check with `node -v`. If missing, tell the user to install from https://nodejs.org
+- **Ornold token** — starts with `orn_sk_`. Ask the user for it, or tell them to get one at https://mcp.ornold.com (sign up → Tokens page → Create token)
 
-### Step 2: Install based on your environment
+## Installation by Agent Type
 
-**If you are Claude Code:**
+### Claude Code
 ```bash
 claude mcp add --transport stdio ornold-browser -- npx mcp-ornold-browser --token TOKEN
 npx mcp-ornold-browser --install-skill
 ```
 
-**If you are Cursor:**
-Write to `~/.cursor/mcp.json`:
+### Cursor
+Write to `~/.cursor/mcp.json` (create if missing, merge if exists):
 ```json
 {
   "mcpServers": {
@@ -35,22 +33,24 @@ Write to `~/.cursor/mcp.json`:
   }
 }
 ```
+Tell user to restart Cursor.
 
-**If you are VS Code / Copilot:**
+### VS Code / Copilot
 ```bash
 code --add-mcp '{"name":"ornold-browser","command":"npx","args":["mcp-ornold-browser","--token","TOKEN"]}'
 ```
 
-**If you are Codex:**
-Write to `~/.codex/config.toml`:
+### Codex
+Write to `~/.codex/config.toml` (create if missing):
 ```toml
 [mcp_servers.ornold-browser]
 command = "npx"
 args = ["-y", "mcp-ornold-browser", "--token", "TOKEN"]
 ```
+Desktop apps don't inherit terminal PATH. If MCP fails, use absolute path from `which npx`.
 
-**If you are Windsurf:**
-Tell the user to go to Settings → Tools → Add MCP Server and paste:
+### Windsurf
+Tell user: Settings → Tools → Add MCP Server, paste:
 ```json
 {
   "mcpServers": {
@@ -62,8 +62,8 @@ Tell the user to go to Settings → Tools → Add MCP Server and paste:
 }
 ```
 
-**If you are Cline:**
-Tell the user to open Cline sidebar → MCP → Add, and paste:
+### Cline
+Tell user: Cline sidebar → MCP → Add, paste:
 ```json
 {
   "mcpServers": {
@@ -76,43 +76,35 @@ Tell the user to open Cline sidebar → MCP → Add, and paste:
 }
 ```
 
-### Step 3: Configure antidetect browser (optional)
+## Antidetect Browser Flags
 
-Ask the user which antidetect browser they use and add the corresponding flags:
+Ask user which antidetect browser they use. Add flags to the args array:
 
-| Browser | Flag | Example |
-|---------|------|---------|
-| Linken Sphere | `--linken-port` | `--linken-port 40080` |
-| Dolphin Anty | `--dolphin-port` + `--dolphin-token` | `--dolphin-port 3001 --dolphin-token eyJ...` |
-| Vision Browser | `--vision-token` | `--vision-token vx_...` |
-| Wadex | `--wadex-port` | `--wadex-port 8080` |
+| Browser | Flags |
+|---------|-------|
+| Linken Sphere | `"--linken-port", "40080"` |
+| Dolphin Anty | `"--dolphin-port", "3001", "--dolphin-token", "API_TOKEN"` |
+| Vision Browser | `"--vision-token", "X_TOKEN"` |
+| Wadex | `"--wadex-port", "8080"` |
 
-### Step 4: Choose interaction mode (optional)
+## Mode Selection
 
-Add `--mode` flag:
-- `dom` (default) — fast, uses DOM snapshots, good for simple pages
-- `vision` — uses screenshots + AI element detection, required for antidetect stealth
-- `both` — both modes available, choose per-task
+Add `"--mode", "MODE"` to args:
+- `dom` (default) — fast, DOM-based
+- `vision` — screenshot + AI detection, best for antidetect stealth
+- `both` — both available
 
-For antidetect browser work, recommend `vision` mode.
+Recommend `vision` for antidetect browser work.
 
-### Step 5: Verify
+## Verify Installation
 
-After installation, try calling the `browser_status` tool to verify the MCP server is running.
-
-## Common user requests and what to do
-
-| User says | What to do |
-|-----------|------------|
-| "Install ornold" / "Set up ornold MCP" | Follow the installation steps above |
-| "Connect my Linken Sphere" | Add `--linken-port 40080` to the MCP args |
-| "I need to automate browsers" | Install ornold MCP, then use the browser tools |
-| "Solve captchas" | Make sure ornold MCP is installed, then use `browser_solve_captcha` |
-| "Record a flow" | Use `browser_start_recording`, perform actions, `browser_stop_recording`, `browser_save_flow` |
+After setup, call the `browser_status` tool. If it responds, the MCP server is running correctly.
 
 ## Troubleshooting
 
-- **"npx not found"**: Node.js is not installed. Direct user to https://nodejs.org
-- **"Token invalid"**: Token may be revoked. User should check https://mcp.ornold.com
-- **Desktop apps (Codex, Cursor) can't find npx**: Use absolute path. Run `which npx` to find it.
-- **MCP server won't start**: Check if port is already in use, or try `npx -y mcp-ornold-browser` to force fresh install.
+| Problem | Solution |
+|---------|----------|
+| `npx: command not found` | Node.js not installed → https://nodejs.org |
+| `Token invalid` | Token may be revoked → check https://mcp.ornold.com |
+| MCP won't start in desktop app | Use absolute npx path: run `which npx`, use that in config |
+| Connection timeout | Check if antidetect browser is running and port is correct |
