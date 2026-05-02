@@ -29,10 +29,15 @@ Requirements: Node.js ≥ 18 (https://nodejs.org)
 Token: get one at https://mcp.ornold.com (sign up → Tokens page → Create token)
 
 Run these two commands:
-1. claude mcp add --transport stdio ornold-browser -- npx mcp-ornold-browser --token YOUR_TOKEN
+1. claude mcp add --transport stdio ornold-browser -- npx mcp-ornold-browser --token YOUR_TOKEN --mode vision
 2. npx mcp-ornold-browser --install-skill
 
-Replace YOUR_TOKEN with the token from the dashboard. The first command adds the MCP server, the second installs the AI skill that teaches you how to use the browser tools effectively.
+Replace YOUR_TOKEN with the token from the dashboard. The first command adds the MCP server (vision mode recommended for antidetect), the second installs the AI skill that teaches you how to use the browser tools effectively.
+
+If you need both vision and DOM modes, create two separate servers:
+1. claude mcp add --transport stdio ornold-vision -- npx mcp-ornold-browser --token YOUR_TOKEN --mode vision
+2. claude mcp add --transport stdio ornold-dom -- npx mcp-ornold-browser --token YOUR_TOKEN --mode dom
+3. npx mcp-ornold-browser --install-skill
 
 After setup, verify by calling the browser_status tool.
 ```
@@ -51,12 +56,14 @@ Create or edit the file ~/.cursor/mcp.json and add this config:
   "mcpServers": {
     "ornold-browser": {
       "command": "npx",
-      "args": ["mcp-ornold-browser", "--token", "YOUR_TOKEN"]
+      "args": ["mcp-ornold-browser", "--token", "YOUR_TOKEN", "--mode", "vision"]
     }
   }
 }
 
 Replace YOUR_TOKEN with the token from the dashboard. If the file already has other servers, merge the ornold-browser entry into the existing mcpServers object. Restart Cursor after saving.
+
+For both modes, create two entries (ornold-vision with --mode vision, ornold-dom with --mode dom).
 ```
 
 ### VS Code (Copilot)
@@ -68,7 +75,7 @@ Requirements: Node.js ≥ 18 (https://nodejs.org)
 Token: get one at https://mcp.ornold.com (sign up → Tokens page → Create token)
 
 Run this command:
-code --add-mcp '{"name":"ornold-browser","command":"npx","args":["mcp-ornold-browser","--token","YOUR_TOKEN"]}'
+code --add-mcp '{"name":"ornold-browser","command":"npx","args":["mcp-ornold-browser","--token","YOUR_TOKEN","--mode","vision"]}'
 
 Or create .vscode/mcp.json in the project root:
 
@@ -77,7 +84,7 @@ Or create .vscode/mcp.json in the project root:
     "ornold-browser": {
       "type": "stdio",
       "command": "npx",
-      "args": ["mcp-ornold-browser", "--token", "YOUR_TOKEN"]
+      "args": ["mcp-ornold-browser", "--token", "YOUR_TOKEN", "--mode", "vision"]
     }
   }
 }
@@ -99,7 +106,7 @@ Go to Windsurf Settings → Tools → Add MCP Server and paste this config:
   "mcpServers": {
     "ornold-browser": {
       "command": "npx",
-      "args": ["mcp-ornold-browser", "--token", "YOUR_TOKEN"]
+      "args": ["mcp-ornold-browser", "--token", "YOUR_TOKEN", "--mode", "vision"]
     }
   }
 }
@@ -121,7 +128,7 @@ Open Cline sidebar → MCP → Add and paste:
   "mcpServers": {
     "ornold-browser": {
       "command": "npx",
-      "args": ["mcp-ornold-browser", "--token", "YOUR_TOKEN"],
+      "args": ["mcp-ornold-browser", "--token", "YOUR_TOKEN", "--mode", "vision"],
       "disabled": false
     }
   }
@@ -142,7 +149,7 @@ Create or edit ~/.codex/config.toml and add:
 
 [mcp_servers.ornold-browser]
 command = "npx"
-args = ["-y", "mcp-ornold-browser", "--token", "YOUR_TOKEN"]
+args = ["-y", "mcp-ornold-browser", "--token", "YOUR_TOKEN", "--mode", "vision"]
 
 Replace YOUR_TOKEN with the token from the dashboard.
 
@@ -166,11 +173,93 @@ After installing the MCP server, connect your antidetect browser by adding flags
 
 Add `"--mode", "MODE"` to args:
 
-- **`dom`** (default) — fast, uses DOM snapshots
+- **`dom`** — fast, uses DOM snapshots
 - **`vision`** — screenshots + AI element detection, best for antidetect stealth
-- **`both`** — both modes available
+- **`both`** — both modes available (not recommended — loads too many tools, agent gets confused)
 
 For antidetect browser automation, use `vision` mode.
+
+### Best Practice: Separate MCP Servers
+
+Create one MCP server per mode and per antidetect browser. This keeps the tool list small — the agent picks the right tool more reliably.
+
+**Claude Code example (two modes + Linken Sphere):**
+```bash
+claude mcp add --transport stdio ornold-vision -- npx mcp-ornold-browser --token TOKEN --mode vision --linken-port 40080
+claude mcp add --transport stdio ornold-dom -- npx mcp-ornold-browser --token TOKEN --mode dom --linken-port 40080
+```
+
+**Cursor example (two antidetect browsers):**
+```json
+{
+  "mcpServers": {
+    "ornold-linken": {
+      "command": "npx",
+      "args": ["mcp-ornold-browser", "--token", "TOKEN", "--mode", "vision", "--linken-port", "40080"]
+    },
+    "ornold-dolphin": {
+      "command": "npx",
+      "args": ["mcp-ornold-browser", "--token", "TOKEN", "--mode", "vision", "--dolphin-port", "3001", "--dolphin-token", "API_TOKEN"]
+    }
+  }
+}
+```
+
+---
+
+## Install Skills (Recommended)
+
+Skills teach the AI agent how to use Ornold tools correctly. Without them, agents may use JavaScript injection instead of human-like character-by-character typing, or skip the vision workflow.
+
+| Agent | Command |
+|-------|---------|
+| **Claude Code** | `npx mcp-ornold-browser --install-skill` |
+| **Cursor** | Copy `skills/.cursorrules` to project root |
+| **Windsurf** | Copy `skills/.windsurfrules` to project root |
+| **Cline** | Copy `skills/.clinerules` to project root |
+| **VS Code Copilot** | Copy `skills/copilot-instructions.md` to `.github/copilot-instructions.md` |
+| **Codex** | Reads `AGENTS.md` automatically |
+
+Full tool reference with examples: [`skills/ornold-browser.md`](skills/ornold-browser.md)
+
+---
+
+## Tool Examples
+
+### Type text (human-like, character by character)
+```
+browser_parallel_type({selector: "[ref=3]", text: "user@mail.com"})
+```
+Each character is typed via CDP keyDown/char/keyUp with Shift for uppercase and symbols, gaussian delays between keystrokes, and per-browser typing profiles. Never use JavaScript to set input values.
+
+### Vision mode — see and click
+```
+browser_parallel_vision_analyze_grouped()     → AI detects elements with [x1,y1,x2,y2] boxes
+browser_parallel_click_normalized_box({box: [0.35, 0.72, 0.65, 0.78]})  → click with Bezier mouse
+```
+
+### Fill form with per-browser data
+```
+browser_parallel_fill_multi({
+  selector: "input[name=email]",
+  values: {"browser1": "user1@mail.com", "browser2": "user2@mail.com"}
+})
+```
+
+### Solve CAPTCHA
+```
+browser_solve_captcha()   → detects type, solves, injects token — all automatic
+```
+
+### Record and replay a flow
+```
+browser_start_recording()
+// ... perform actions ...
+browser_stop_recording()
+browser_edit_flow({editStep: 3, editFields: {text: "{{row.email}}"}})
+browser_save_flow({name: "Registration"})
+browser_run_flow({flowId: "fl_abc", dataset: [{email: "a@b.com"}]})
+```
 
 ---
 
