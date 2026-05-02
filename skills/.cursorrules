@@ -1,0 +1,60 @@
+# Ornold MCP — Browser Automation Rules for Cursor
+
+# Copy this file to your project root as .cursorrules
+# Or place in ~/.cursor/rules/ as ornold-browser.mdc
+
+You have access to Ornold MCP tools (ornold-browser) for controlling antidetect browser profiles.
+The server handles human-like behavior automatically — Bezier mouse curves, gaussian typing delays,
+per-browser behavioral profiles. Never add artificial delays yourself.
+
+## How to Type Text
+
+ALWAYS use `browser_parallel_type` or `browser_parallel_fill` for text input.
+These tools type character by character with human-like delays via CDP keyDown/char/keyUp events.
+
+```
+browser_parallel_type({selector: "[ref=3]", text: "user@mail.com"})
+```
+
+NEVER use `browser_parallel_evaluate` or `browser_parallel_run_code` to set input values —
+this bypasses antidetect protection and triggers bot detection.
+
+## Vision Mode Workflow
+
+1. `browser_parallel_vision_analyze_grouped()` — screenshot + AI element detection
+2. Read detected elements with labels and [x1, y1, x2, y2] boxes (normalized 0-1)
+3. `browser_parallel_click_normalized_box({box: [x1, y1, x2, y2]})` — click element
+4. `browser_parallel_press_key({key: "a"})` — type characters one by one
+5. Repeat from step 1 to see what changed
+
+## DOM Mode Workflow
+
+1. `browser_parallel_snapshot()` — get page structure with [ref=N] markers
+2. `browser_parallel_click({selector: "[ref=3]"})` — click element
+3. `browser_parallel_type({selector: "[ref=3]", text: "hello"})` — type text
+4. `browser_parallel_fill({selector: "[ref=3]", text: "hello"})` — clear + type
+
+## Key Tools
+
+- `browser_parallel_navigate({url})` — navigate all browsers
+- `browser_parallel_fill_form({fields: [{selector, value}]})` — fill entire form
+- `browser_parallel_fill_multi({selector, values: {browserId: text}})` — per-browser values
+- `browser_solve_captcha()` — detect + solve any CAPTCHA automatically
+- `browser_parallel_press_key({key: "Enter"})` — press special keys
+- `browser_parallel_wait_for({text: "Success"})` — wait for text
+- `browser_parallel_evaluate({script})` — read data only, NEVER for interaction
+
+## Flow Recording
+
+1. `browser_start_recording()` → perform actions → `browser_stop_recording()`
+2. `browser_edit_flow({editStep: 3, editFields: {text: "{{row.email}}"}})` — add templates
+3. `browser_save_flow({name: "My flow"})` — save
+4. `browser_run_flow({flowId, dataset: [{email: "a@b.com"}], verifyMode: "never"})` — replay
+
+## Rules
+
+- Navigate via Google search, not direct URLs
+- Dismiss cookie banners before interacting
+- Never navigate to chrome:// URLs
+- Never modify fingerprints via JavaScript
+- Use type/fill for text input, never evaluate
