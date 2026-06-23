@@ -8,7 +8,7 @@ AI-powered browser automation with antidetect browser support, CAPTCHA solving, 
 
 ## What It Does
 
-- **Control antidetect browsers** — Linken Sphere, Dolphin Anty, Vision Browser, Wadex
+- **Control antidetect browsers** — Linken Sphere, Dolphin Anty, Wade X/Wadex, Vision Browser, AdsPower, Octo Browser, Multilogin, MoreLogin, 0DETECT, GoLogin, Undetectable, Incogniton, Indigo
 - **Vision-first interaction** — screenshot → AI element detection → coordinate clicks (no CSS selectors)
 - **CAPTCHA solving** — reCAPTCHA, hCaptcha, Cloudflare Turnstile, PerimeterX, and more
 - **Flow recording & replay** — record once, replay across 100+ browsers in parallel
@@ -160,14 +160,34 @@ Note: Desktop apps don't inherit terminal PATH. If MCP fails to start, find your
 
 ## Antidetect Browser Setup
 
-After installing the MCP server, connect your antidetect browser by adding flags to the args:
+After installing the MCP server, connect your antidetect browser by adding flags to the args.
+Provider tools are registered only when that provider is enabled by flags or environment variables.
 
-| Browser | Add to args | Example |
-|---------|------------|---------|
-| **Linken Sphere** | `"--linken-port", "PORT"` | `"--linken-port", "40080"` |
-| **Dolphin Anty** | `"--dolphin-port", "PORT", "--dolphin-token", "TOKEN"` | `"--dolphin-port", "3001", "--dolphin-token", "eyJ..."` |
-| **Vision Browser** | `"--vision-token", "TOKEN"` | `"--vision-token", "vx_..."` |
-| **Wadex** | `"--wadex-port", "PORT"` | `"--wadex-port", "8080"` |
+| Browser | Add to args | Env aliases | Notes |
+|---------|-------------|-------------|-------|
+| **Linken Sphere** | `"--linken-port", "40080"` | `LINKEN_PORT` | Local API port |
+| **Dolphin Anty** | `"--dolphin-port", "3001", "--dolphin-token", "TOKEN"` | `DOLPHIN_PORT`, `DOLPHIN_API_TOKEN` | Local start/stop plus cloud profile API |
+| **Wade X / Wadex** | `"--wadex-port", "8080"` | `WADEX_PORT` | Local API port |
+| **Vision Browser** | `"--vision-token", "TOKEN", "--vision-port", "PORT"` | `VISION_TOKEN`, `VISION_PORT` | Token required; local port optional |
+| **AdsPower** | `"--adspower-url", "http://local.adspower.net:50325"` | `ADSPOWER_URL`, `ADSPOWER_LOCAL_API_URL`, `ADSPOWER_KEY`, `ADSPOWER_API_KEY` | Local API; key optional if your setup requires it |
+| **Octo Browser** | `"--octo-token", "TOKEN", "--octo-url", "http://127.0.0.1:58888"` | `OCTO_TOKEN`, `OCTO_API_TOKEN`, `OCTO_URL`, `OCTO_LOCAL_API_URL` | Token for cloud profile API; local URL for start/stop |
+| **Multilogin** | `"--multilogin-token", "TOKEN", "--multilogin-url", "http://127.0.0.1:35000"` | `MULTILOGIN_TOKEN`, `MULTILOGIN_API_TOKEN`, `MULTILOGIN_LOCAL_API_URL` | Supports cloud, local, proxy, and cookies endpoints |
+| **MoreLogin** | `"--morelogin-port", "40000"` or `"--morelogin-url", "http://127.0.0.1:40000"` | `MORELOGIN_PORT`, `MORELOGIN_URL`, `MORELOGIN_LOCAL_API_URL` | Local API |
+| **0DETECT** | `"--detect0-port", "PORT", "--detect0-token", "TOKEN"` | `DETECT0_PORT`, `DETECT0_URL`, `DETECT0_LOCAL_API_URL`, `DETECT0_TOKEN`, `DETECT0_API_TOKEN` | Local API; token optional for setups that require auth |
+| **GoLogin** | `"--gologin-token", "TOKEN"` | `GOLOGIN_TOKEN`, `GOLOGIN_API_TOKEN`, `GOLOGIN_URL`, `GOLOGIN_API_URL` | Cloud API |
+| **Undetectable** | `"--undetectable-port", "25325"` or `"--undetectable-url", "http://127.0.0.1:25325"` | `UNDETECTABLE_PORT`, `UNDETECTABLE_URL`, `UNDETECTABLE_LOCAL_API_URL` | Local API |
+| **Incogniton** | `"--incogniton-port", "35000"` or `"--incogniton-url", "http://127.0.0.1:35000"` | `INCOGNITON_PORT`, `INCOGNITON_URL`, `INCOGNITON_LOCAL_API_URL` | Local API |
+| **Indigo Browser** | `"--indigo-token", "TOKEN"` | `INDIGO_TOKEN`, `INDIGO_API_TOKEN`, `INDIGO_URL`, `INDIGO_API_URL` | Cloud API |
+
+**Octo Browser example:**
+```bash
+claude mcp add --transport stdio ornold-octo -- npx -y mcp-ornold-browser@latest --token TOKEN --mode vision --octo-token OCTO_TOKEN --octo-url http://127.0.0.1:58888
+```
+
+**AdsPower example:**
+```bash
+claude mcp add --transport stdio ornold-adspower -- npx -y mcp-ornold-browser@latest --token TOKEN --mode vision --adspower-url http://local.adspower.net:50325
+```
 
 ### Interaction Modes
 
@@ -195,11 +215,11 @@ claude mcp add --transport stdio ornold-dom -- npx mcp-ornold-browser --token TO
   "mcpServers": {
     "ornold-linken": {
       "command": "npx",
-      "args": ["mcp-ornold-browser", "--token", "TOKEN", "--mode", "vision", "--linken-port", "40080"]
+      "args": ["-y", "mcp-ornold-browser@latest", "--token", "TOKEN", "--mode", "vision", "--linken-port", "40080"]
     },
-    "ornold-dolphin": {
+    "ornold-octo": {
       "command": "npx",
-      "args": ["mcp-ornold-browser", "--token", "TOKEN", "--mode", "vision", "--dolphin-port", "3001", "--dolphin-token", "API_TOKEN"]
+      "args": ["-y", "mcp-ornold-browser@latest", "--token", "TOKEN", "--mode", "vision", "--octo-token", "OCTO_TOKEN", "--octo-url", "http://127.0.0.1:58888"]
     }
   }
 }

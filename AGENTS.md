@@ -4,7 +4,7 @@ You are an AI agent. A user has asked you to install Ornold MCP. Follow these st
 
 ## What is Ornold MCP?
 
-Ornold MCP (`mcp-ornold-browser`) is an MCP server for browser automation: control antidetect browsers (Linken Sphere, Dolphin Anty, Vision Browser, Wadex), solve CAPTCHAs, record and replay automation flows, and interact with web pages through vision or DOM.
+Ornold MCP (`mcp-ornold-browser`) is an MCP server for browser automation: control antidetect browsers (Linken Sphere, Dolphin Anty, Wade X/Wadex, Vision Browser, AdsPower, Octo Browser, Multilogin, MoreLogin, 0DETECT, GoLogin, Undetectable, Incogniton, Indigo), solve CAPTCHAs, record and replay automation flows, and interact with web pages through vision or DOM.
 
 npm package: `mcp-ornold-browser`
 
@@ -94,7 +94,7 @@ Split them: one server for DOM work, one for vision work. If you only use one mo
 
 ### Why split by antidetect browser?
 
-- Each antidetect browser adds its own management tools (Linken: ~15, Dolphin: ~5, Vision: ~10)
+- Each antidetect browser adds its own management tools (for example: Linken, Dolphin, Octo, AdsPower, Multilogin)
 - If you use multiple antidetect browsers, create a separate MCP server per browser
 - If you only use one antidetect browser, one server is enough
 
@@ -140,8 +140,26 @@ Ask user which antidetect browser they use. Add flags to the args array:
 |---------|-------|
 | Linken Sphere | `"--linken-port", "40080"` |
 | Dolphin Anty | `"--dolphin-port", "3001", "--dolphin-token", "API_TOKEN"` |
-| Vision Browser | `"--vision-token", "X_TOKEN"` |
-| Wadex | `"--wadex-port", "8080"` |
+| Wade X / Wadex | `"--wadex-port", "8080"` |
+| Vision Browser | `"--vision-token", "X_TOKEN", "--vision-port", "PORT"` |
+| AdsPower | `"--adspower-url", "http://local.adspower.net:50325"` and optionally `"--adspower-key", "API_KEY"` |
+| Octo Browser | `"--octo-token", "OCTO_API_TOKEN", "--octo-url", "http://127.0.0.1:58888"` |
+| Multilogin | `"--multilogin-token", "API_TOKEN", "--multilogin-url", "http://127.0.0.1:35000"` |
+| MoreLogin | `"--morelogin-port", "40000"` or `"--morelogin-url", "http://127.0.0.1:40000"` |
+| 0DETECT | `"--detect0-port", "PORT"` or `"--detect0-url", "URL"`, optionally `"--detect0-token", "TOKEN"` |
+| GoLogin | `"--gologin-token", "API_TOKEN"` |
+| Undetectable | `"--undetectable-port", "25325"` or `"--undetectable-url", "http://127.0.0.1:25325"` |
+| Incogniton | `"--incogniton-port", "35000"` or `"--incogniton-url", "http://127.0.0.1:35000"` |
+| Indigo Browser | `"--indigo-token", "API_TOKEN"` |
+
+Provider tools appear only when the matching provider is enabled by flags or environment variables. If the user asks for Octo, AdsPower, Multilogin, MoreLogin, 0DETECT, GoLogin, Undetectable, Incogniton, or Indigo and the tools are missing, tell them to add the matching flags and restart the MCP server; do not say the browser is unsupported.
+
+### Common provider examples
+
+```bash
+claude mcp add --transport stdio ornold-octo -- npx -y mcp-ornold-browser@latest --token TOKEN --mode vision --octo-token OCTO_TOKEN --octo-url http://127.0.0.1:58888
+claude mcp add --transport stdio ornold-adspower -- npx -y mcp-ornold-browser@latest --token TOKEN --mode vision --adspower-url http://local.adspower.net:50325
+```
 
 ## Mode Selection
 
