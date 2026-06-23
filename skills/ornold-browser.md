@@ -3,10 +3,12 @@ name: ornold-browser
 description: >
   Ornold MCP browser automation for antidetect browsers. Vision-first interaction
   (screenshot + AI element detection + coordinate clicks), flow recording & replay,
-  CAPTCHA solving, and antidetect profile management (Linken Sphere, Dolphin Anty, Vision Browser).
+  CAPTCHA solving, and antidetect profile management across Linken Sphere, Dolphin Anty,
+  Wade X/Wadex, Vision Browser, AdsPower, Octo Browser, Multilogin, MoreLogin, 0DETECT,
+  GoLogin, Undetectable, Incogniton, and Indigo.
   Use this skill whenever ornold-browser MCP tools are connected, or when the user asks about
   browser automation, antidetect browsers, flow recording, running recorded flows, CAPTCHA solving
-  in browser profiles, multi-browser parallel execution, or managing Linken/Dolphin/Vision profiles.
+  in browser profiles, multi-browser parallel execution, or managing antidetect browser profiles.
   Also trigger when user mentions "record a flow", "replay flow", "run flow", "vision mode",
   "browser profiles", "warmup profiles", "mass registration", or "parallel browsers".
   Proactively use when ornold-browser1 or ornold-browser MCP tools appear in available tools.
@@ -23,8 +25,8 @@ auth, billing, CAPTCHA solving, vision analysis, and human-like behavior generat
 ```
 AI Agent (you) → stdio MCP → ornold-mcp client (local) → WebSocket → ornold-mcp server (remote)
                                     ↓                                        ↓
-                              CDP to browsers                    Captcha solving, Vision analysis,
-                              (Linken/Dolphin/Vision)            Human-like ops, Flow storage
+                              CDP / local APIs                   Captcha solving, Vision analysis,
+                              (all enabled providers)            Human-like ops, Flow storage
 ```
 
 Everything you do goes through MCP tools. The server generates human-like mouse movements
@@ -63,10 +65,32 @@ The response contains:
 - User explicitly says "just navigate to URL X" with no further task
 - Trivial single-step actions ("take a screenshot of google.com")
 
-When in doubt — search. Free plan gets 5 searches/month, so use them on real tasks.
+When in doubt — search. Inter plan: 100 searches/month, Pro: 1000. Free has no access.
 
 If `knowledge_search` returns "No matching playbook found" — proceed cautiously, ask the user
 to confirm each major step, and never assume platform quirks.
+
+## Contributing private playbooks (Pro plan)
+
+Pro users can save their own playbooks visible only to them across sessions.
+
+When user says "save this as playbook", "запиши флоу", "запомни процесс":
+
+```
+1. knowledge_contribute_start                   → returns interview protocol
+2. Walk user through the questions one by one   → collect title, domain, intent, steps, failure modes
+3. Format as Markdown content                   → sections required (Prerequisites, Steps, Failure modes, ...)
+4. knowledge_contribute_submit({title, domain, intent, content, tags})
+```
+
+Manage entries:
+```
+knowledge_list_mine          → list your private entries
+knowledge_update({id, ...})  → edit one
+knowledge_delete({id})       → remove
+```
+
+Limit: 100 contributions/month. Entries are private — never visible to other users.
 
 ## Vision-First Interaction
 
@@ -78,8 +102,8 @@ detection), you see the page through screenshots and click by normalized coordin
 ```
 1. browser_parallel_vision_analyze_grouped    → screenshot + AI element detection
 2. Read the detected elements with labels and [x1, y1, x2, y2] boxes (normalized 0-1)
-3. browser_parallel_click_normalized_box      → click center of the target element's box
-4. browser_parallel_press_key                 → type characters one by one
+3. browser_parallel_click_normalized_box      → click buttons/links by target box
+4. browser_parallel_type_at_normalized_box    → click a field box, verify focus, type full text
 5. Repeat from step 1 to see what changed
 ```
 
@@ -89,21 +113,22 @@ detection), you see the page through screenshots and click by normalized coordin
 - NEVER use `browser_parallel_evaluate` or `browser_parallel_run_code` to click, scroll, focus, or interact with elements — this bypasses antidetect protection
 - `browser_parallel_evaluate` is ONLY for reading data (extracting text, checking URLs, page state)
 - `browser_parallel_snapshot` is NOT available in vision mode
-- To type into a field: click it first with `click_normalized_box`, then use `press_key` for each character
+- To type into a field from vision analysis, use `browser_parallel_type_at_normalized_box`
+- Use `browser_parallel_type_focused` only after a field is already focused
+- Use `browser_parallel_press_key` only for special keys such as Enter, Tab, Escape, arrows, or shortcuts
 
 ### For typing text
 
-Click the target field, then send keys one at a time:
+Send the target field box and full text in one call:
 ```
-browser_parallel_click_normalized_box({box: [0.3, 0.25, 0.7, 0.30]})
-browser_parallel_press_key({key: "h"})
-browser_parallel_press_key({key: "e"})
-browser_parallel_press_key({key: "l"})
-browser_parallel_press_key({key: "l"})
-browser_parallel_press_key({key: "o"})
+browser_parallel_type_at_normalized_box({
+  box: [0.3, 0.25, 0.7, 0.30],
+  text: "hello",
+  clearFirst: true
+})
 ```
 
-The server adds human-like delays between keystrokes automatically.
+The server clicks with human-like mouse movement, verifies the focused editable element, then types with human-like keyboard timing and value readback.
 
 ## Flow Recording & Replay
 
@@ -219,6 +244,44 @@ if you need to check before solving.
 
 ## Antidetect Browser Management
 
+Provider management tools are registered only for providers enabled in the MCP server config.
+If the user asks for a provider and its tools are missing, do not claim the provider is unsupported.
+Tell the user which flag/env is required and ask them to restart the MCP server.
+
+Supported providers and tool prefixes:
+
+| Provider | Tool prefix | Enable with |
+|----------|-------------|-------------|
+| Linken Sphere | `linken_*` | `--linken-port` or `LINKEN_PORT` |
+| Wade X / Wadex | `wadex_*` | `--wadex-port` or `WADEX_PORT` |
+| Dolphin Anty | `dolphin_*` | `--dolphin-port`, `--dolphin-token`, `DOLPHIN_PORT`, `DOLPHIN_API_TOKEN` |
+| Vision Browser | `vision_*` | `--vision-token`, optional `--vision-port`, `VISION_TOKEN`, `VISION_PORT` |
+| AdsPower | `adspower_*` | `--adspower-url`, optional `--adspower-key`, `ADSPOWER_URL`, `ADSPOWER_API_KEY` |
+| Octo Browser | `octo_*` | `--octo-token`, `--octo-url`, `OCTO_API_TOKEN`, `OCTO_LOCAL_API_URL` |
+| Multilogin | `multilogin_*` | `--multilogin-token`, `--multilogin-url`, `MULTILOGIN_API_TOKEN`, `MULTILOGIN_LOCAL_API_URL` |
+| MoreLogin | `morelogin_*` | `--morelogin-url`, `--morelogin-port`, `MORELOGIN_LOCAL_API_URL`, `MORELOGIN_PORT` |
+| 0DETECT | `detect0_*` | `--detect0-url`, `--detect0-port`, optional `--detect0-token` |
+| GoLogin | `gologin_*` | `--gologin-token`, optional `--gologin-url` |
+| Undetectable | `undetectable_*` | `--undetectable-url`, `--undetectable-port` |
+| Incogniton | `incogniton_*` | `--incogniton-url`, `--incogniton-port` |
+| Indigo Browser | `indigo_*` | `--indigo-token`, optional `--indigo-url` |
+
+### Start and attach workflow
+
+For every antidetect provider, the correct sequence is:
+
+```
+1. List profiles/sessions with the provider list tool
+2. Start the chosen profile/session with the provider start tool
+3. Read returned CDP/debug data (port, wsEndpoint, browserWSEndpoint, or similar)
+4. If the provider did not auto-connect, call browser_attach with the returned port/ws/id
+5. Call browser_list and confirm the browser is connected
+6. Only then navigate, analyze, click, type, record flows, or solve CAPTCHA
+```
+
+Never stop after starting a provider profile if the user asked to use the browser. Starting a profile
+opens the browser process; `browser_attach`/`browser_list` confirms Ornold can control it.
+
 ### Linken Sphere (linken_* tools)
 
 ```
@@ -240,6 +303,95 @@ linken_start_warmup               → warm up with random browsing
 dolphin_get_profiles              → list profiles (cloud API)
 dolphin_start_profile             → start profile (local, auto-connects CDP)
 dolphin_stop_profile              → stop profile
+```
+
+### Wade X / Wadex (wadex_* tools)
+
+Same session model as Linken Sphere:
+
+```
+wadex_get_instances               → list sessions
+wadex_create_quick_sessions       → create sessions
+wadex_start_instances             → start sessions
+wadex_stop_instances              → stop sessions
+```
+
+### AdsPower (adspower_* tools)
+
+```
+adspower_list_profiles            → list browser profiles
+adspower_open_browser             → start/open profile via local API
+adspower_list_active_browsers     → list active local browsers
+adspower_close_browser            → stop profile
+```
+
+### Octo Browser (octo_* tools)
+
+```
+octo_get_profiles                 → list profiles via cloud API
+octo_start_profile                → start profile via local client API
+octo_list_active_profiles         → list active local profiles
+octo_stop_profile                 → stop profile
+```
+
+For Octo, cloud profile listing needs `--octo-token`; local start/stop needs `--octo-url`
+(commonly `http://127.0.0.1:58888`).
+
+### Multilogin (multilogin_* tools)
+
+```
+multilogin_profile_search                     → search profiles
+multilogin_start_browser_profile_with_selenium → start profile and return automation data
+multilogin_stop_browser_profile               → stop profile
+```
+
+### MoreLogin (morelogin_* tools)
+
+```
+morelogin_list_profiles          → list profiles
+morelogin_start_profile          → start profile and return debug data
+morelogin_stop_profile           → stop profile
+morelogin_get_all_debug_info     → get debug info for opened profiles
+```
+
+### 0DETECT (detect0_* tools)
+
+```
+detect0_list_profiles            → list profiles
+detect0_start_profile            → start profile
+detect0_create_profile           → create profile
+```
+
+### GoLogin (gologin_* tools)
+
+```
+gologin_get_browser_list_new      → list profiles
+gologin_add_browser               → create profile
+gologin_get_browser_by_id         → get profile details
+```
+
+### Undetectable (undetectable_* tools)
+
+```
+undetectable_list_profiles        → list profiles
+undetectable_start_profile        → start profile
+undetectable_stop_profile         → stop profile
+```
+
+### Incogniton (incogniton_* tools)
+
+```
+incogniton_list_profiles          → list profiles
+incogniton_start_profile          → start profile
+incogniton_stop_profile           → stop profile
+```
+
+### Indigo Browser (indigo_* tools)
+
+```
+indigo_list_profiles              → list profiles
+indigo_start_profile              → start profile
+indigo_stop_profile               → stop profile
 ```
 
 ### Vision Browser (vision_* tools)

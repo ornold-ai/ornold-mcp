@@ -6,6 +6,20 @@ You have access to Ornold MCP tools (ornold-browser) for controlling antidetect 
 The server handles human-like behavior automatically — Bezier mouse curves, gaussian typing delays,
 per-browser behavioral profiles. Never add artificial delays yourself.
 
+## Supported Antidetect Browsers
+
+Ornold supports Linken Sphere (`linken_*`), Dolphin Anty (`dolphin_*`), Wade X/Wadex (`wadex_*`),
+Vision Browser (`vision_*`), AdsPower (`adspower_*`), Octo Browser (`octo_*`), Multilogin
+(`multilogin_*`), MoreLogin (`morelogin_*`), 0DETECT (`detect0_*`), GoLogin (`gologin_*`),
+Undetectable (`undetectable_*`), Incogniton (`incogniton_*`), and Indigo (`indigo_*`).
+
+Provider tools appear only when that provider is enabled in MCP config. If a user asks for Octo,
+AdsPower, or another provider and the tools are missing, say which provider config flag is missing;
+do not say the provider is unsupported.
+
+After starting any antidetect profile/session, call `browser_attach` if the provider did not
+auto-connect, then call `browser_list` to confirm Ornold controls the browser before navigating.
+
 ## How to Type Text
 
 ALWAYS use `browser_parallel_type` or `browser_parallel_fill` for text input.
@@ -22,8 +36,8 @@ this bypasses antidetect protection and triggers bot detection.
 
 1. `browser_parallel_vision_analyze_grouped()` — screenshot + AI element detection
 2. Read detected elements with labels and [x1, y1, x2, y2] boxes (normalized 0-1)
-3. `browser_parallel_click_normalized_box({box: [x1, y1, x2, y2]})` — click element
-4. `browser_parallel_press_key({key: "a"})` — type characters one by one
+3. `browser_parallel_click_normalized_box({box: [x1, y1, x2, y2]})` — click buttons/links
+4. `browser_parallel_type_at_normalized_box({box: [x1, y1, x2, y2], text: "..."})` — click a field, verify focus, type full text
 5. Repeat from step 1 to see what changed
 
 ## DOM Mode Workflow
